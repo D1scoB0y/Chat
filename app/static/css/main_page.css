@@ -1,0 +1,134 @@
+@import './base.css';
+
+.registration-text{
+    width: max-content;
+
+    margin: 0 auto;
+
+    padding-top: 40px;
+
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--default-text-color);
+}
+
+.buttons{
+    margin: 48px auto;
+    width: max-content;
+}
+
+.button-href{
+    display: block;
+    text-decoration: none;
+}
+
+.buttons > .button-href + .button-href{
+    display: block;
+    margin-top: 24px;
+}
+
+.button{
+    width: 400px;
+    height: 40px;
+
+    background: var(--light-bg-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--default-text-color);
+
+    border-radius: 12px;
+}
+
+.button:hover{
+    border: 2px solid var(--blue-color);
+}
+
+.no-chats{
+    width: max-content;
+
+    margin: auto;
+
+    font-size: 20px;
+    font-size: 400;
+    color: var(--default-text-color);
+}
+
+.inner-content{
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.inner-content::-webkit-scrollbar{
+    display: none;
+}
+
+.chat-plate{
+    width: 100%;
+
+    background: var(--bg-color);
+
+    border-bottom: 1px solid var(--border-color);
+
+    padding: 0 24px;
+
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.chat-member-username{
+    width: 100%;
+
+    margin-block: 0;
+
+    padding-top: 10px;
+
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--default-text-color);
+}
+
+.chat-plate:hover{
+    background: var(--light-bg-color);
+}
+
+.last-message-info{
+    width: 100%;
+    
+    padding-top: 4px;
+    padding-bottom: 10px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.inner-last-message-info{
+    display: flex;
+
+}
+
+.last-message-sender{
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--blue-color);
+}
+
+.last-message-text{
+    padding-left: 8px;
+
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--default-text-color);
+}
+
+.last-message-date{
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--muted-text-color);
+}

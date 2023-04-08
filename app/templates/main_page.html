@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block links %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main_page.css') }}">
+{% endblock %}
+
+{% block title %}
+    Home | LG
+{% endblock %}
+
+{% block content %}
+    {% if g.user.is_authenticated %}
+        
+        {% if user_chats %}
+
+            <div class="inner-content">
+                {% for chat in user_chats %}
+
+                    {% if chat.last_message_text %}
+
+                        <a href="{{ url_for('chat_room', room_name=chat.room_name) }}"><div class="chat-plate">
+                            <p class="chat-member-username">{{ chat.room_name|replace(g.user.username, '')|replace(':', '') }}</p>
+
+                            <div class="last-message-info">
+                                <div class="inner-last-message-info">
+                                    <p class="last-message-sender">{{ chat.last_message_sender }}:</p>
+                                    <p class="last-message-text">{{ chat.last_message_text }}</p>
+                                </div>
+
+                                <p class="last-message-date">{{ chat.last_message_date.strftime('%H:%M %d.%m') }}</p>
+                            </div>
+
+                        </div></a>
+                    {% endif %}
+
+                {% endfor %}
+            </div>
+            
+
+        {% else %}
+            <p class="no-chats">You are have no chats</p>
+        {% endif %}
+
+    {% else %}
+        <p class="registration-text">First you need to register or log in to your account</p>
+
+        <div class="buttons">
+            <a href="{{ url_for('login_page') }}" class="button-href"><div class="button">Log in</div></a>
+            <a href="{{ url_for('registration_page') }}" class="button-href"><div class="button">New account</div></a>
+        </div>
+    {%  endif %}
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+{% endblock %}

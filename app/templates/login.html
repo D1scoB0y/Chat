@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block links %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/registration.css') }}">
+{% endblock %}
+
+{% block title %}
+    Log in | LG
+{% endblock %}
+
+{% block content %}
+    
+    <form class="form" action="{{ url_for('login_page') }}" method="post" novalidate="novalidate">
+
+        {% for msg in get_flashed_messages()|list + form.errors|list %}
+            <p class="error">{{ msg }}</p>
+        {% endfor %}
+
+        {{ form.csrf_token }}
+        {{ form.email(class='field', autocomplete='off', placeholder='Email') }}
+        {{ form.password(class='field', autocomplete='off', placeholder='Password') }}
+        
+        <div class="check-box-container">
+            {{ form.remember_me(class='check-box') }}
+            <p class="remember-me-text">Remember me</p>
+        </div>
+
+        {{ form.submit(class='submit', value='Create') }}
+    </form>
+
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% block links %}
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    {% endblock %}
+    <title>{% block title %}{% endblock %}</title>
+</head>
+<body>
+
+    <div class="main-block">
+
+        <div class="header">
+            <div class="inner-header">
+                <a href="{{ url_for('main_page') }}" class="company-name">localGost</a>
+
+                {% if g.user.is_authenticated %}
+                    <div class="search-block">
+                        <input type="text" id="search-input" class="search-input" placeholder="Type to search somebody">
+                        <div class="search-results" id="sr-block"></div>
+                    </div>
+
+                    <p class="username" id="username">{{ g.user.username }}</p>
+                {% endif %}
+
+            </div>
+        </div>
+
+        <div class="content">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    {% block scripts %}
+        <script src="{{ url_for('static', filename='js/searching_by_username.js') }}"></script>
+    {% endblock %}
+</body>
+</html>

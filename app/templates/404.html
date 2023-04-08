@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block links %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/404.css') }}">
+{% endblock %}
+
+{% block title %}
+    Not found | LG
+{% endblock %}
+
+{% block content %}
+    
+    <p class="e404-word">404</p>
+    <p class="nf-word">Page not found</p>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+{% endblock %} 

@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block links %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/registration.css') }}">
+{% endblock %}
+
+{% block title %}
+    Registration | LG
+{% endblock %}
+
+{% block content %}
+    
+    <form class="form" action="{{ url_for('registration_page') }}" method="post" novalidate="novalidate">
+
+        {{ form.csrf_token }}
+
+        {{ form.username(class='field', autocomplete='off', placeholder='Username') }}
+        {{ form.email(class='field', autocomplete='off', placeholder='Email') }}
+        {{ form.password(class='field', autocomplete='off', placeholder='Password') }}
+        {{ form.confirm_password(class='field', autocomplete='off', placeholder='Confirm password') }}
+
+        {{ form.submit(class='submit', value='Create') }}
+    </form>
+
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

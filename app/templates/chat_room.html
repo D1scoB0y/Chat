@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block links %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chat_room.css') }}">
+{% endblock %}
+
+{% block title %}
+    {{ other_user_username }} | LG
+{% endblock %}
+
+{% block content %}
+
+    <div class="cr-header">
+        <a onclick="leave_room()" href="{{ url_for('main_page') }}" class="back-button"><< Back</a>
+        <p class="other-user-username">{{ other_user_username }}</p>
+    </div>
+
+    <div class="messages-block" id="messages">
+        {% if room_messages %}
+            {% for msg in room_messages %}
+                {% if msg.only_for == g.user.username or msg.only_for == 'all' %}
+                    <div class="message-block
+                    {% if loop.index == 1 %}first-message{% endif %}
+                    {% if msg.msg_type == 'command' %}command-message{% endif %}
+                    ">
+                        <div class="username-senddate">
+                            <p class="sender-username {% if msg.msg_type == 'command' %}system-message{% endif %}">{{ msg.sender_username }}</p>
+                            <p class="send-date">{{ msg.send_date.strftime('%H:%M %d.%m.%Y') }}</p>
+                        </div>
+
+                        <p class="message-text">{{ msg.text }}</p>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </div>
+        
+    <div class="send-msg-block">
+        <input id="message-field" class="send-msg-input" placeholder="Type your message...">
+        <div id="send-msg-button" class="send-msg-button" onclick="sendMessage()">Send</div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+
+    <script
+    src="https://cdn.socket.io/4.6.0/socket.io.min.js"
+    integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+"
+    crossorigin="anonymous"></script>
+
+    <script>
+        const message_field = document.getElementById("message-field");
+        const messages = document.getElementById('messages');
+
+        messages.scrollTop = messages.scrollHeight;
+
+        socketio = io();
+
+        // ХЕНДЛЕРЫ
+
+        // хендлер подключения
+        socketio.on('connect', (data) => {
+            socketio.emit('connect_to_room', {'room_name':'{{ room_name }}'});
+        });
+
+        // хендлер для сообщения
+        socketio.on('new_message', (data) => {
+
+            var content = `<div class="message-block">
+                            <div class="username-senddate">
+                                <p class="sender-username">${data['message_obj']['sender_username']}</p>
+                                <p class="send-date">${data['message_obj']['send_date']}</p>
+                            </div>
+
+                            <p class="message-text">${data['message_obj']['text']}</p>
+                        </div>`;
+
+            messages.innerHTML += content;
+            messages.scrollTop = messages.scrollHeight;
+        });
+
+
+        // хендлер для команды
+        socketio.on('new_command', (data) => {
+
+            const content = `<div class="message-block command-message">
+                <div class="username-senddate">
+                    <p class="sender-username system-message">${data['message_obj']['sender_username']}</p>
+                    <p class="send-date">${data['message_obj']['send_date']}</p>
+                </div>
+
+                <p class="message-text">${data['message_obj']['text']}</p>
+            </div>`;
+            
+            
+            messages.innerHTML += content;
+            messages.scrollTop = messages.scrollHeight;
+        });
+
+
+        // хендлер для команды очистки всех системных сообщений
+        socketio.on('delete_sys_messages', (data) => {
+            document.querySelectorAll('.command-message').forEach(e => e.remove());
+        });
+
+
+        // Отправка сообщения при нажатии энтер
+        message_field.addEventListener("keyup", function(event) {
+            event.preventDefault();
+
+            if (event.keyCode === 13) {
+                sendMessage();
+            }
+        });
+
+
+        // функция отправки сообщения
+        function sendMessage () {
+            if (message_field.value === '') return;
+
+            if (message_field.value[0] === '/'){
+                socketio.emit('new_command', {'sender_username':'{{ g.user.username }}', 'room_name':'{{ room_name }}', 'message_text':message_field.value});
+
+            } else {
+                socketio.emit('new_message', {'sender_username':'{{ g.user.username }}', 'room_name':'{{ room_name }}', 'message_text':message_field.value});
+
+            }
+            message_field.value = '';
+        }
+
+
+        // функция выхода из комнаты
+        function leave_room() {
+            socketio.emit('disconnect_from_room', {'room_name':'{{ room_name }}'}, () => {
+                socketio.disconnect();
+            });
+        }
+
+    </script>
+{% endblock %}
+
