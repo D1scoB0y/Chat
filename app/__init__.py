@@ -3,12 +3,14 @@ from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
+from dotenv import dotenv_values
 
 app = Flask(__name__)
-app.config.from_object('config')
 
-app.config['SECRET_KEY'] = 'inw4n05yn0583n08ndsnjbnsjyn'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:zelel228@localhost:5432/chat_db'
+config = dotenv_values('.env')
+
+app.config['SECRET_KEY'] = config['SECRET_KEY']
+app.config['SQLALCHEMY_DATABASE_URI'] = config['DATABASE_URI']
 
 socketio = SocketIO(app, cors_allowed_origins="*", server='eventlet')
 
