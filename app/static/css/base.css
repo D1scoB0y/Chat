@@ -13,6 +13,7 @@
     --light-bg-color: #18181A;
     --default-text-color: #ffffff;
     --muted-text-color: #818181;
+    --red: #E5515D;
 }
 
 a{
@@ -49,6 +50,7 @@ body{
     border-radius: 16px;
 }
 
+/* ХЕДЕР */
 .header{
     height: 60px;
 
@@ -65,9 +67,14 @@ body{
     height: 100%;
     padding: 0 32px;
 
-    display: grid;
+    /* display: grid;
     grid-template-columns: 1fr auto 1fr;
+    align-items: center; */
+
+    display: flex;
     align-items: center;
+    justify-content: space-between;
+
 }
 
 .company-name{
@@ -79,6 +86,7 @@ body{
     color: var(--default-text-color);
 }
 
+/* Поле ввода поиска по никнейму */
 .search-block{
     margin-left: 48px;
     width: 400px;
@@ -108,14 +116,35 @@ body{
     background: var(--light-bg-color);
 }
 
-.username{
-    font-size: 16px;
-    font-weight: 400;
-    color: var(--muted-text-color);
+/* Блок текущего пользователя */
+.user-box{
+    width: max-content;
+    height: 40px;
 
     margin-left: auto;
+
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
 }
 
+.user-icon{
+    width: 18px;
+    height: 18px;
+}
+
+.main-username{
+    margin-left: 14px;
+
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--default-text-color);
+}
+
+/* Контентная часть */
 .content{
     width: 100%;
     flex: 1;
@@ -124,6 +153,7 @@ body{
     flex-direction: column;
 }
 
+/* Результат поиска по никнейму */
 .search-results{
     width: 100%;
 

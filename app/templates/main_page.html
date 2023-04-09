@@ -19,18 +19,20 @@
 
                     {% if chat.last_message_text %}
 
-                        <a href="{{ url_for('chat_room', room_name=chat.room_name) }}"><div class="chat-plate">
-                            <p class="chat-member-username">{{ chat.room_name|replace(g.user.username, '')|replace(':', '') }}</p>
+                        {% set other_username = chat.room_name|replace(g.user.username, '')|replace(':', '') %}
+
+                        <a href="{{ url_for('chat_room', room_name=chat.room_name) }}" onclick="leave_room()"><div class="chat-plate">
+                            <p class="chat-member-username">{{ other_username }}</p>
 
                             <div class="last-message-info">
                                 <div class="inner-last-message-info">
-                                    <p class="last-message-sender">{{ chat.last_message_sender }}:</p>
-                                    <p class="last-message-text">{{ chat.last_message_text }}</p>
+                                    <p class="last-message-sender" id="sender-{{ other_username }}">{{ chat.last_message_sender }}:</p>
+                                    <p class="last-message-text" id="text-{{ other_username }}">{{ chat.last_message_text }}</p>
                                 </div>
 
-                                <p class="last-message-date">{{ chat.last_message_date.strftime('%H:%M %d.%m') }}</p>
+                                <p class="last-message-date" id="date-{{ other_username }}">{{ chat.last_message_date.strftime('%H:%M %d.%m') }}</p>
                             </div>
-
+ 
                         </div></a>
                     {% endif %}
 
@@ -55,4 +57,50 @@
 
 {% block scripts %}
     {{ super() }}
+
+    <script
+    src="https://cdn.socket.io/4.6.0/socket.io.min.js"
+    integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+"
+    crossorigin="anonymous"></script>
+
+    <script>
+
+        window.addEventListener("DOMContentLoaded", (event) => {
+            socketio = io();
+
+            // ХЕНДЛЕРЫ
+
+            // хендлер подключения
+            socketio.on('connect', (data) => {
+                socketio.emit('connect_to_room', {'room_name':'{{ room_name }}'});
+            });
+
+            // хендлер для обновления последнего сообщения чата
+            socketio.on('mp_new_message', (data) => {
+
+                const last_message_sender = document.getElementById('sender-' + data['message_obj']['sender_username']);
+                const last_message_text = document.getElementById('text-' + data['message_obj']['sender_username']);
+                const last_message_date = document.getElementById('date-' + data['message_obj']['sender_username']);
+
+
+                last_message_sender.innerHTML = data['message_obj']['sender_username'] + ':';
+                last_message_text.innerHTML = data['message_obj']['text'];
+                last_message_date.innerHTML = data['message_obj']['send_date'];
+            });
+
+
+            // функция выхода из комнаты
+            function leave_room() {
+                socketio.emit('disconnect_from_room', {'room_name':'{{ room_name }}'}, () => {
+                    socketio.disconnect();
+                });
+            }
+
+        });
+
+
+
+        
+    </script>
+
 {% endblock %}

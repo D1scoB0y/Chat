@@ -69,7 +69,8 @@ def chat_room(room_name):
     other_user_username = room_name.replace(g.user.username, '').replace(':', '')
     other_user = User.query.filter_by(username=other_user_username).first()
 
-    room_messages = Messages.query.filter_by(room_name=room_name).all()
+    room_messages = Messages.query.filter_by(room_name=room_name)\
+        .order_by(Messages.send_date).all()
 
     user_in_blacklist = BlackList.query.filter(BlackList.user_id==other_user.id)\
         .filter(BlackList.user_id==g.user.id) is not None

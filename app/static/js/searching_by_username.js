@@ -1,6 +1,6 @@
 const search_field = document.getElementById('search-input');
 const sr_block = document.getElementById('sr-block');
-const cur_user_username = document.getElementById('username').value;
+const cur_user_username = document.getElementById('main-username').value;
 
 const url = '/api/search/';
 

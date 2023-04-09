@@ -23,7 +23,12 @@
                         <div class="search-results" id="sr-block"></div>
                     </div>
 
-                    <p class="username" id="username">{{ g.user.username }}</p>
+                    <div class="user-box">
+
+                        <img class="user-icon" src="{{ url_for('static', filename='images/user_icon.svg') }}" alt="user icon">
+                        <p class="main-username" id="main-username">{{ g.user.username }}</p>
+
+                    </div>
                 {% endif %}
 
             </div>

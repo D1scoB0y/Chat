@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block title %}
-    {{ other_user_username }} | LG
+    Chat with {{ other_user_username }}
 {% endblock %}
 
 {% block content %}
@@ -63,7 +63,7 @@
 
         // хендлер подключения
         socketio.on('connect', (data) => {
-            socketio.emit('connect_to_room', {'room_name':'{{ room_name }}'});
+            socketio.emit('connect_to_chat', {'room_name':'{{ room_name }}'});
         });
 
         // хендлер для сообщения
@@ -107,6 +107,28 @@
         });
 
 
+        // хендлер для команды показа всех возможных команд
+        socketio.on('help', (data) => {
+            const content = `<div class="message-block command-message">
+                <div class="username-senddate">
+                    <p class="sender-username system-message">${data['message_obj']['sender_username']}</p>
+                    <p class="send-date">${data['message_obj']['send_date']}</p>
+                </div>
+
+                <p class="message-text">
+                    /ban - Adding user to your blacklist <br>
+                    /unban - Removing user from your blacklist <br>
+                    /clear - Deleting all system messages <br>
+                    /help - Show all able commands
+                </p>
+            </div>`;
+            
+            
+            messages.innerHTML += content;
+            messages.scrollTop = messages.scrollHeight;;
+        });
+
+
         // Отправка сообщения при нажатии энтер
         message_field.addEventListener("keyup", function(event) {
             event.preventDefault();
@@ -126,6 +148,7 @@
 
             } else {
                 socketio.emit('new_message', {'sender_username':'{{ g.user.username }}', 'room_name':'{{ room_name }}', 'message_text':message_field.value});
+                socketio.emit('mp_new_message', {'sender_username':'{{ g.user.username }}', 'room_name':'{{ room_name }}', 'message_text':message_field.value});
 
             }
             message_field.value = '';
@@ -134,7 +157,7 @@
 
         // функция выхода из комнаты
         function leave_room() {
-            socketio.emit('disconnect_from_room', {'room_name':'{{ room_name }}'}, () => {
+            socketio.emit('disconnect_from_chat', {'room_name':'{{ room_name }}'}, () => {
                 socketio.disconnect();
             });
         }

@@ -9,15 +9,38 @@ from app.models import User, Messages, ChatRoom, BlackList
 @socketio.on('connect_to_room')
 def room_joining(data):
 
-    join_room(data['room_name'])
-    join_room(current_user.username)
+    join_room('mp' + current_user.username)
 
 
 @socketio.on('disconnect_from_room')
 def room_leaving(data):
 
+    leave_room('mp' + current_user.username)
+
+
+'''
+    Подключение к комнате чата
+'''
+@socketio.on('connect_to_chat')
+def room_joining(data):
+
+    other_user_username = data['room_name'].replace(current_user.username, '').replace(':', '')
+
+    join_room(data['room_name'])
+    join_room(current_user.username)
+    join_room('mp' + other_user_username)
+    print('\nJOINED\n')
+
+
+@socketio.on('disconnect_from_chat')
+def room_leaving(data):
+
+    other_user_username = data['room_name'].replace(current_user.username, '').replace(':', '')
+
     leave_room(data['room_name'])
     leave_room(current_user.username)
+    leave_room('mp' + other_user_username)
+    print('\n DISCONNECTED\n')
 
 
 @socketio.on('new_command')
@@ -132,7 +155,7 @@ def new_message(data):
 
 
     # Команда очистки чата от системных сообщений
-    elif data.get('message_text') == '/delete_sys_messages':
+    elif data.get('message_text') == '/clear':
 
         Messages.query.filter_by(
             room_name=data.get('room_name'),
@@ -149,6 +172,28 @@ def new_message(data):
         )
 
     
+    # Команда показывающая все возможные команды
+    elif data.get('message_text') == '/help':
+
+        new_message = Messages(
+                sender_id=sender.id,
+                sender_username='System',
+                msg_type='command',
+                room_name=room.room_name,
+                text='',
+                send_date=dt.datetime.now().replace(microsecond=0),
+                only_for=sender.username
+            )
+        
+        db.session.add(new_message)
+        db.session.commit()
+
+        emit('help',
+            {'message_type':'command', 'message_obj':new_message.like_json()},
+            room=sender.username,
+            broadcast=True
+            )
+
     # Если команда не найдена
     else: 
 
@@ -247,3 +292,4 @@ def new_message(data):
         db.session.add(new_message)
         db.session.commit()
         emit('new_message', {'message_type':'message', 'message_obj':new_message.like_json()}, room=room.room_name, broadcast=True)
+        emit('mp_new_message', {'message_type':'message', 'message_obj':new_message.like_json()}, room='mp' + receiver.username, broadcast=True)

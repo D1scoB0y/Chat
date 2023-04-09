@@ -62,6 +62,8 @@ class Messages(db.Model):
     send_date = db.Column(db.DateTime, nullable=False)
     only_for = db.Column(db.String, nullable=False)
 
+    edited = db.Column(db.Boolean, nullable=False, default=False)
+
     def __init__(self, sender_username, msg_type, sender_id, room_name, text, send_date, only_for):
 
         self.sender_id = sender_id
