@@ -16,9 +16,8 @@
         {{ form.csrf_token }}
 
         {{ form.username(class='field', autocomplete='off', placeholder='Username') }}
-        {{ form.email(class='field', autocomplete='off', placeholder='Email') }}
         {{ form.password(class='field', autocomplete='off', placeholder='Password') }}
-        {{ form.confirm_password(class='field', autocomplete='off', placeholder='Confirm password') }}
+        {{ form.password2(class='field', autocomplete='off', placeholder='Confirm password') }}
 
         {{ form.submit(class='submit', value='Create') }}
     </form>

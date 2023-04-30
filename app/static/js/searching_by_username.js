@@ -5,7 +5,6 @@ const cur_user_username = document.getElementById('main-username').value;
 const url = '/api/search/';
 
 
-
 function getNames(url, search_data) {
     return fetch(url + search_data, {method:'GET'})
 }
@@ -18,9 +17,6 @@ search_field.oninput = function () {
         getNames(url, search_field.value)
         .then(responce => responce.json())
         .then(data => {
-
-            console.log(data['data'])
-            console.log(data['data'].length)
 
             if (data['data'].length > 0){
 

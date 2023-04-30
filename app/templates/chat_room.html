@@ -63,11 +63,11 @@
 
         // хендлер подключения
         socketio.on('connect', (data) => {
-            socketio.emit('connect_to_chat', {'room_name':'{{ room_name }}'});
+            socketio.emit('connect_to_chat_rooms', {'room_name':'{{ room_name }}'});
         });
 
         // хендлер для сообщения
-        socketio.on('new_message', (data) => {
+        socketio.on('new_user_message', (data) => {
 
             var content = `<div class="message-block">
                             <div class="username-senddate">
@@ -147,8 +147,8 @@
                 socketio.emit('new_command', {'sender_username':'{{ g.user.username }}', 'room_name':'{{ room_name }}', 'message_text':message_field.value});
 
             } else {
-                socketio.emit('new_message', {'sender_username':'{{ g.user.username }}', 'room_name':'{{ room_name }}', 'message_text':message_field.value});
-                socketio.emit('mp_new_message', {'sender_username':'{{ g.user.username }}', 'room_name':'{{ room_name }}', 'message_text':message_field.value});
+                socketio.emit('new_user_message', {'sender_username':'{{ g.user.username }}', 'room_name':'{{ room_name }}', 'message_text':message_field.value});
+                socketio.emit('new_main_page_message', {'sender_username':'{{ g.user.username }}', 'room_name':'{{ room_name }}', 'message_text':message_field.value});
 
             }
             message_field.value = '';
@@ -157,7 +157,7 @@
 
         // функция выхода из комнаты
         function leave_room() {
-            socketio.emit('disconnect_from_chat', {'room_name':'{{ room_name }}'}, () => {
+            socketio.emit('disconnect_to_chat_rooms', {'room_name':'{{ room_name }}'}, () => {
                 socketio.disconnect();
             });
         }

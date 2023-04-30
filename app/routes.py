@@ -1,181 +1,154 @@
 from flask import render_template, g, redirect, url_for, flash, abort
-from flask_login import current_user, login_user, logout_user, login_required
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import current_user, logout_user, login_required
 
-from app import app, db
-from app.forms import RegistrationForm, LoginForm
-from app.models import User, ChatRoom, Messages, BlackList
-from sqlalchemy import or_
+from app import app
+from app.forms.forms import RegistrationForm, LoginForm
 
-'''
-    Main page
-'''
+from app.services.room_services import get_room_messages, get_user_chats, room_is_exist, create_room
+from app.services.user_services import search_users_by_username_part, get_recipient_by_sender_username,\
+    user_in_blacklist, create_user, user_login
+
+
 @app.route('/')
 def main_page():
+    '''Главная страница со списком всех чатов пользователя'''
 
     if g.user.is_authenticated:
-        user_chats = ChatRoom.query.filter(or_(
-            ChatRoom.room_name.ilike(g.user.username + ':%'),
-            ChatRoom.room_name.ilike('%:' + g.user.username)
-        )).all()
+        user_chats = get_user_chats(username=current_user.username)
 
         return render_template('main_page.html', user_chats=user_chats)
     
     return render_template('main_page.html')
 
 
-'''
-    Creating chat room
-'''
-@app.route('/create_chat_room/<string:username>')
+@app.route('/create_chat_room/<string:recipient_username>')
 @login_required
-def create_chat_room(username):
+def create_chat_room(recipient_username: str):
+    '''Создание комнаты чата'''
 
-    if username == g.user.username:
+    # Если пользователь хочет создать комнату с
+    # самим собой выкидываем ошибку
+    if recipient_username == current_user.username:
         abort(404)
-
-    room_name_variant1 = g.user.username + ':' + username
-    room_name_variant2 = username + ':' + g.user.username
-
-    # Проверяем существует ли комната c искомым пользователем
-    room_is_exist1 = ChatRoom.query.filter_by(room_name=room_name_variant1).all()
-    room_is_exist2 = ChatRoom.query.filter_by(room_name=room_name_variant2).all()
-
-    if len(room_is_exist1):
-        return redirect(url_for('chat_room', room_name=room_name_variant1))
     
-    elif len(room_is_exist2):
-        return redirect(url_for('chat_room', room_name=room_name_variant2))
+    # Для начала нужно проверить, не существует ли уже такая комната
 
+    # Определяем два возможный названия комнаты
+    room_name_variant_1 = current_user.username + ":" + recipient_username
+    room_name_variant_2 = recipient_username + ":" + current_user.username
+
+    # Проверяем первый вариант
+    room_is_exist_1 = room_is_exist(room_name=room_name_variant_1)
+
+    # Проверяем второй вариант
+    room_is_exist_2 = room_is_exist(room_name=room_name_variant_2)
+
+    if room_is_exist_1:
+        return redirect(url_for('chat_room', room_name=room_name_variant_1))
+    
+    elif room_is_exist_2:
+        return redirect(url_for('chat_room', room_name=room_name_variant_2))
+
+    # Если комнаты не существует создаем новую
     else:
-        new_room = ChatRoom(
-            room_name=room_name_variant1,
-        )
+        create_room(room_name_variant_1)
 
-        db.session.add(new_room)
-        db.session.commit()
-
-        return redirect(url_for('chat_room', room_name=room_name_variant1))
+        return redirect(url_for('chat_room', room_name=room_name_variant_1))
 
 
-'''
-    Chat room
-'''
 @app.route('/chat_room/<string:room_name>')
 @login_required
 def chat_room(room_name):
+    '''Комната чата'''
 
-    # Получаем 'другого' пользователя
-    other_user_username = room_name.replace(g.user.username, '').replace(':', '')
-    other_user = User.query.filter_by(username=other_user_username).first()
+    # Получаем собеседника
+    recipient = get_recipient_by_sender_username(room_name=room_name,
+                                sender_username=current_user.username,)
 
-    room_messages = Messages.query.filter_by(room_name=room_name)\
-        .order_by(Messages.send_date).all()
+    # Получаем список всех сообщений комнаты
+    room_messages = get_room_messages(room_name=room_name)
 
-    user_in_blacklist = BlackList.query.filter(BlackList.user_id==other_user.id)\
-        .filter(BlackList.user_id==g.user.id) is not None
+    # Проверяем нахождение текущего пользователя в черном списке у собеседника
+    sender_in_black_list = user_in_blacklist(blacklist_owner_id=recipient.id,
+                                                user_id=current_user.id,)
 
     return render_template(
         'chat_room.html',
         room_messages=room_messages,
-        other_user_username=other_user_username,
+        other_user_username=recipient.username,
         room_name=room_name,
-        user_in_blacklist=user_in_blacklist,
+        user_in_blacklist=sender_in_black_list,
         )
 
 
-'''
-    Registration
-'''
 @app.route('/registration', methods=['GET', 'POST'])
 def registration_page():
+    '''Форма регистрации пользователя'''
 
     form = RegistrationForm()
 
     if form.validate_on_submit():
-         
-        new_user = User(
-            username=form.username.data,
-            email=form.email.data,
-            password=generate_password_hash(form.password.data),
-        )
+        
+        # Создание пользователя
+        create_user(username=form.username.data,
+                    password=form.password.data,)
 
-        db.session.add(new_user)
-        db.session.commit()
-
-        login_user(new_user)
+        # Авторизация пользователя
+        user_login(username=form.username.data,
+                password=form.password.data,)
 
         return redirect(url_for('main_page'))
+
 
     return render_template('registration.html', form=form)
 
 
-'''
-    Login
-'''
 @app.route('/login', methods=['GET', 'POST'])
 def login_page():
+    '''Форма авторизации пользователя'''
 
     form = LoginForm()
 
     if form.validate_on_submit():
-         
-        user = User.query.filter_by(email=form.email.data).first()
-
-        if user is not None and check_password_hash(user.password, form.password.data):
-
-            if form.remember_me.data:
-                login_user(user, remember=True)
-
-            else:
-                login_user(user)
-
+        
+        # Авторизация пользователя
+        is_logined = user_login(username=form.username.data,
+                                password=form.password.data)
+        
+        # Проверяем подошли ли данные для авторизации
+        if is_logined:
             return redirect(url_for('main_page'))
         else:
-            flash('Wrong email or password')
+            flash('Wrong username or password')
 
     return render_template('login.html', form=form)
 
 
-'''
-    Logout
-'''
 @app.route('/logout')
+@login_required
 def logout_page():
-
+    '''Выход из аккаунта'''
     logout_user()
 
     return redirect(url_for('main_page'))
 
 
-'''
-    Endpoint for searching by username
-'''
-@app.route('/api/search/<string:name_part>')
-def searching(name_part):
+@app.route('/api/search/<string:username_part>')
+def searching(username_part: str) -> None:
+    '''Подбирает доступных пользователей по части их имени
+    (поиск пользователя по имени на главной странице)'''
 
-    variants = User.query.filter(User.username.ilike(name_part + '%')).limit(8).all()
-    variants = list(map(lambda x: x.username, variants))
-    
-    if g.user.username in variants:
-        variants.remove(g.user.username)
-
-    return {
-        'data' : variants,
-        }
+    return search_users_by_username_part(username_part=username_part)
 
 
-'''
-    404 handler
-'''
 @app.errorhandler(404)
 def not_found(e):
+    '''Хендлер 404 ошибки'''
+
     return render_template('404.html')
 
 
-'''
-     Global variables
-'''
 @app.before_request
 def g_vars():
+    '''g объект'''
     g.user = current_user
