@@ -1,11 +1,12 @@
+from flask import current_app as app
 from flask_socketio import emit
 
-from app import app, db
+from app.extensions import db
 from app.models import Message
 from app.utils import current_datetime
 from app.services.room_services import get_room_by_name
-from app.services.user_services import get_user_by_username, get_recipient_by_sender_username,\
-    user_in_blacklist, get_recipient_username_by_sender_username as get_recipient_username
+from app.services.user_services import get_user_by_username, get_recipient_by_sender_id,\
+    user_in_blacklist, get_recipient_id_by_sender_id as get_recipient_id
 
 
 def create_system_message(room_name: str, text: str, only_for: str) -> Message:
@@ -74,16 +75,25 @@ def send_user_message(message: Message) -> None:
 
         # Если получатель не находится в комнате чата, он все равно сможет
         # увидеть последнее сообщение чата на главной странице
-        recipient_username = get_recipient_username(
+        recipient_id = get_recipient_id(
             room_name=message.room_name,
-            sender_username=message.sender_username,
+            sender_id=message.sender_id,
         )
         # отправлем сообщение в комнату в которой находиться
         # получатель если он находиться на главной странице
         emit('new_main_page_message',
             {'message_type':'message', 'message_obj':message.like_json()},
-            room='main_page_' + recipient_username,
+            room='main_page_' + str(recipient_id),
             broadcast=True)
+
+
+def delete_message(message: Message) -> None:
+    '''Удаляет сообщение из бд'''
+
+    message = db.session.merge(message)
+
+    db.session.delete(message)
+    db.session.commit()
 
 
 def update_room_last_message_info(room_name: str, sender_username: str, text: str) -> None:
@@ -115,9 +125,9 @@ def message_controller(message_data: dict) -> None:
     )
 
     # Определяем получателя
-    recipient = get_recipient_by_sender_username(
+    recipient = get_recipient_by_sender_id(
         room_name=room.room_name,
-        sender_username=sender.username,
+        sender_id=sender.id,
     )
 
     # Проверяем находится ли отправитель в черном списке у получателя
@@ -132,19 +142,8 @@ def message_controller(message_data: dict) -> None:
         user_id=recipient.id,
     )
 
-    # Если отправитель в черном списке у получателя
-    if sender_in_black_list:
-        
-        # Отправляем системное сообщение о том, что
-        # отправитель находиться в черном списке получателя
-        send_system_message(create_system_message(
-                room_name=room.room_name,
-                text=f'{recipient.username} has added you to the blacklist',
-                only_for=sender.username,
-            ))
-
     # Если получатель в черном списке у отправителя
-    elif recipient_in_black_list:
+    if recipient_in_black_list:
 
         # Отправляем системное сообщение о том, что
         # получатель находиться в черном списке отправителя
@@ -153,7 +152,19 @@ def message_controller(message_data: dict) -> None:
                 text=f'''{recipient.username} is on your blacklist. 
                 Use /unban command to delete {recipient.username} 
                 from your blacklist''',
-                only_for=sender.username,
+                only_for=str(sender.id),
+            ))
+
+
+    # Если отправитель в черном списке у получателя
+    elif sender_in_black_list:
+        
+        # Отправляем системное сообщение о том, что
+        # отправитель находиться в черном списке получателя
+        send_system_message(create_system_message(
+                room_name=room.room_name,
+                text=f'{recipient.username} has added you to the blacklist',
+                only_for=str(sender.id),
             ))
 
     # Если все нормально - отправляем обычное сообщение 

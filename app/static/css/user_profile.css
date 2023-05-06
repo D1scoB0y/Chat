@@ -1,0 +1,50 @@
+@import './base.css';
+
+.inner-content{
+    padding: 30px 0 0 40px;
+    display: flex;
+    flex-direction: row;
+}
+
+.big-user-icon{
+    width: 92px;
+    height: 92px;
+}
+
+.username-box{
+    display: flex;
+    flex-direction: column;
+}
+
+.username-inner-box{
+    display: flex;
+    align-items: center;
+}
+
+.edit-username-href{
+    margin-top: 10px;
+    margin-left: 12px;
+}
+
+.edit-icon{
+    width: 20px;
+    height: 20px;
+}
+
+.username{
+    padding-left: 30px;
+
+    font-size: 32px;
+    font-weight: 300;
+    color: var(--default-text-color);
+}
+
+.exit-word{
+    padding: 20px 0 0 30px;
+
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--red);
+
+    text-decoration: underline;
+}

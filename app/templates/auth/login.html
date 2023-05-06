@@ -11,14 +11,18 @@
 
 {% block content %}
     
-    <form class="form" action="{{ url_for('login_page') }}" method="post" novalidate="novalidate">
-
-        {% for msg in get_flashed_messages()|list + form.errors|list %}
-            <p class="error">{{ msg }}</p>
-        {% endfor %}
+    <form class="form" action="{{ url_for('auth_routes.login_page') }}" method="post" novalidate>
 
         {{ form.csrf_token }}
-        {{ form.email(class='field', autocomplete='off', placeholder='Email') }}
+
+        {% for error in get_flashed_messages()|list + form.username.errors|list %}
+            <p class="field-error">{{ error }}</p>
+        {% endfor %}
+        {{ form.username(class='field', autocomplete='off', placeholder='Username') }}
+
+        {% for error in form.password.errors %}
+            <p class="field-error">{{ error }}</p>
+        {% endfor %}
         {{ form.password(class='field', autocomplete='off', placeholder='Password') }}
         
         <div class="check-box-container">
@@ -26,7 +30,7 @@
             <p class="remember-me-text">Remember me</p>
         </div>
 
-        {{ form.submit(class='submit', value='Create') }}
+        {{ form.submit(class='submit', value='Log in') }}
     </form>
 
 {% endblock %}

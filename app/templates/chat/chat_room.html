@@ -12,7 +12,7 @@
 {% block content %}
 
     <div class="cr-header">
-        <a onclick="leave_room()" href="{{ url_for('main_page') }}" class="back-button"><< Back</a>
+        <a onclick="leave_room()" href="{{ url_for('main_routes.main_page') }}" class="back-button"><< Back</a>
         <p class="other-user-username">{{ other_user_username }}</p>
     </div>
 
@@ -85,7 +85,6 @@
 
         // хендлер для команды
         socketio.on('new_command', (data) => {
-
             const content = `<div class="message-block command-message">
                 <div class="username-senddate">
                     <p class="sender-username system-message">${data['message_obj']['sender_username']}</p>
@@ -103,12 +102,14 @@
 
         // хендлер для команды очистки всех системных сообщений
         socketio.on('delete_sys_messages', (data) => {
+            console.log('CLEAR COMMAND')
             document.querySelectorAll('.command-message').forEach(e => e.remove());
         });
 
 
         // хендлер для команды показа всех возможных команд
         socketio.on('help', (data) => {
+            console.log('HELP COMMAND')
             const content = `<div class="message-block command-message">
                 <div class="username-senddate">
                     <p class="sender-username system-message">${data['message_obj']['sender_username']}</p>
@@ -122,14 +123,14 @@
                     /help - Show all able commands
                 </p>
             </div>`;
-            
-            
+
+
             messages.innerHTML += content;
             messages.scrollTop = messages.scrollHeight;;
         });
 
 
-        // Отправка сообщения при нажатии энтер
+        // Отправка сообщения при нажатии на enter
         message_field.addEventListener("keyup", function(event) {
             event.preventDefault();
 
@@ -157,7 +158,7 @@
 
         // функция выхода из комнаты
         function leave_room() {
-            socketio.emit('disconnect_to_chat_rooms', {'room_name':'{{ room_name }}'}, () => {
+            socketio.emit('disconnect_from_chat_rooms', {'room_name':'{{ room_name }}'}, () => {
                 socketio.disconnect();
             });
         }

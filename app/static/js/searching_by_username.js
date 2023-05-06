@@ -25,7 +25,7 @@ search_field.oninput = function () {
                 var data = data['data'];
             
                 data.forEach(el => {
-                    sr_block.innerHTML += `<a class='sr-href' href='http://127.0.0.1:5000/create_chat_room/${el}'><div class='search-result'>${el}</div></a>`;
+                    sr_block.innerHTML += `<a class='sr-href' href='http://127.0.0.1:5000/chat/create_chat_room/${el[0]}'><div class='search-result'>${el[1]}</div></a>`;
                 });
 
                 sr_block.classList.add('sr-visible');

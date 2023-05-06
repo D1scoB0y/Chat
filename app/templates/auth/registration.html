@@ -11,13 +11,31 @@
 
 {% block content %}
     
-    <form class="form" action="{{ url_for('registration_page') }}" method="post" novalidate="novalidate">
+    <form class="form" action="{{ url_for('auth_routes.registration_page') }}" method="post" novalidate>
 
         {{ form.csrf_token }}
 
+
+        {% for error in form.username.errors %}
+            <p class="field-error">{{ error }}</p>
+        {% endfor %}
+
         {{ form.username(class='field', autocomplete='off', placeholder='Username') }}
+
+        {% for error in form.password.errors %}
+            <p class="field-error">{{ error }}</p>
+        {% endfor %}
         {{ form.password(class='field', autocomplete='off', placeholder='Password') }}
+
+        {% for error in form.password2.errors %}
+            <p class="field-error">{{ error }}</p>
+        {% endfor %}
         {{ form.password2(class='field', autocomplete='off', placeholder='Confirm password') }}
+
+        <div class="check-box-container">
+            {{ form.remember_me(class='check-box') }}
+            <p class="remember-me-text">Remember me</p>
+        </div>
 
         {{ form.submit(class='submit', value='Create') }}
     </form>

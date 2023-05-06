@@ -110,6 +110,7 @@ class Message(db.Model):
         '''Представляет некоторые данные сообщения в виде словаря'''
 
         return {
+            'sender_id':self.sender_id,
             'sender_username':self.sender_username,
             'room_name':self.room_name,
             'text':self.text,

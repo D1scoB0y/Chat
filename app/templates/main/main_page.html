@@ -19,18 +19,18 @@
 
                     {% if chat.last_message_text %}
 
-                        {% set other_username = chat.room_name|replace(g.user.username, '')|replace(':', '') %}
+                        {% set recipient_id = chat.room_name|replace(g.user.id, '')|replace(':', '') %}
 
-                        <a href="{{ url_for('chat_room', room_name=chat.room_name) }}" onclick="leave_room()"><div class="chat-plate">
-                            <p class="chat-member-username">{{ other_username }}</p>
+                        <a href="{{ url_for('chat_routes.chat_room', room_name=chat.room_name) }}" onclick="leave_room()"><div class="chat-plate">
+                            <p class="chat-member-username">{{ (recipient_id|get_user_by_id).username }}</p>
 
                             <div class="last-message-info">
                                 <div class="inner-last-message-info">
-                                    <p class="last-message-sender" id="sender-{{ other_username }}">{{ chat.last_message_sender }}:</p>
-                                    <p class="last-message-text" id="text-{{ other_username }}">{{ chat.last_message_text }}</p>
+                                    <p class="last-message-sender" id="sender-{{ recipient_id }}">{{ chat.last_message_sender }}:</p>
+                                    <p class="last-message-text" id="text-{{ recipient_id }}">{{ chat.last_message_text }}</p>
                                 </div>
 
-                                <p class="last-message-date" id="date-{{ other_username }}">{{ chat.last_message_date.strftime('%H:%M %d.%m') }}</p>
+                                <p class="last-message-date" id="date-{{ recipient_id }}">{{ chat.last_message_date.strftime('%H:%M %d.%m.%Y') }}</p>
                             </div>
 
                         </div></a>
@@ -48,8 +48,8 @@
         <p class="registration-text">First you need to register or log in to your account</p>
 
         <div class="buttons">
-            <a href="{{ url_for('login_page') }}" class="button-href"><div class="button">Log in</div></a>
-            <a href="{{ url_for('registration_page') }}" class="button-href"><div class="button">New account</div></a>
+            <a href="{{ url_for('auth_routes.login_page') }}" class="button-href"><div class="button">Log in</div></a>
+            <a href="{{ url_for('auth_routes.registration_page') }}" class="button-href"><div class="button">New account</div></a>
         </div>
     {%  endif %}
 
@@ -72,16 +72,16 @@
 
             // хендлер подключения
             socketio.on('connect', (data) => {
-                socketio.emit('connect_to_room', {'room_name':'{{ room_name }}'});
+                socketio.emit('connect_to_main_page_room', {'room_name':'{{ room_name }}'});
             });
 
             // хендлер для обновления последнего сообщения чата
-            socketio.on('mp_new_message', (data) => {
+            socketio.on('new_main_page_message', (data) => {
+                console.log(data)
 
-                const last_message_sender = document.getElementById('sender-' + data['message_obj']['sender_username']);
-                const last_message_text = document.getElementById('text-' + data['message_obj']['sender_username']);
-                const last_message_date = document.getElementById('date-' + data['message_obj']['sender_username']);
-
+                const last_message_sender = document.getElementById('sender-' + data['message_obj']['sender_id']);
+                const last_message_text = document.getElementById('text-' + data['message_obj']['sender_id']);
+                const last_message_date = document.getElementById('date-' + data['message_obj']['sender_id']);
 
                 last_message_sender.innerHTML = data['message_obj']['sender_username'] + ':';
                 last_message_text.innerHTML = data['message_obj']['text'];
@@ -91,7 +91,7 @@
 
             // функция выхода из комнаты
             function leave_room() {
-                socketio.emit('disconnect_from_room', {'room_name':'{{ room_name }}'}, () => {
+                socketio.emit('disconnect_from_main_page_room', {'room_name':'{{ room_name }}'}, () => {
                     socketio.disconnect();
                 });
             }

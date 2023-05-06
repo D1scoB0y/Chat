@@ -11,6 +11,7 @@ from config import Config
 from app.forms.error_text import wrong_username_length, wrong_password_length, blank_field, passwords_dont_match
 from app.forms.validators import username_is_unique_validator
 
+
 class RegistrationForm(FlaskForm):
     '''Форма регистрации'''
 
@@ -41,6 +42,9 @@ class RegistrationForm(FlaskForm):
         EqualTo('password', message=passwords_dont_match),
     ])
 
+    # Не выходить из учетной записи
+    remember_me = BooleanField('remember_me')
+
     submit = SubmitField('submit')
 
 
@@ -59,5 +63,27 @@ class LoginForm(FlaskForm):
 
     # Не выходить из учетной записи
     remember_me = BooleanField('remember_me')
+
+    submit = SubmitField('submit')
+
+
+class EditUsernameForm(FlaskForm):
+    '''Форма смены имени пользователя'''
+
+    # Новое имя пользователя
+    new_username = StringField('username', validators=[
+        DataRequired(message=blank_field),
+        Length(
+            min=Config.MIN_USERNAME_LENGTH,
+            max=Config.MAX_USERNAME_LENGTH,
+            message=wrong_username_length
+        ),
+        username_is_unique_validator,
+    ])
+
+    # Текущий пароль
+    current_password = PasswordField('password', validators=[
+        DataRequired(message=blank_field),
+    ])
 
     submit = SubmitField('submit')

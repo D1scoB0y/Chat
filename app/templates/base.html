@@ -15,7 +15,7 @@
 
         <div class="header">
             <div class="inner-header">
-                <a href="{{ url_for('main_page') }}" class="company-name">localGost</a>
+                <a href="{{ url_for('main_routes.main_page') }}" class="company-name">localGost</a>
 
                 {% if g.user.is_authenticated %}
                     <div class="search-block">
@@ -23,12 +23,11 @@
                         <div class="search-results" id="sr-block"></div>
                     </div>
 
-                    <div class="user-box">
-
-                        <img class="user-icon" src="{{ url_for('static', filename='images/user_icon.svg') }}" alt="user icon">
-                        <p class="main-username" id="main-username">{{ g.user.username }}</p>
-
-                    </div>
+                    <a href="{{ url_for('user_routes.user_account') }}" class="user-profile-href">
+                        <div class="user-box visible" id="user-box">
+                            <img class="user-icon" src="{{ url_for('static', filename='images/user_icon.svg') }}" alt="user icon">
+                            <p class="main-username" id="main-username">{{ g.user.username }}</p>
+                        </div></a>
                 {% endif %}
 
             </div>

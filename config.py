@@ -20,7 +20,7 @@ class Config:
 
     # Конфигурация пользователя
     MIN_USERNAME_LENGTH = 3
-    MAX_USERNAME_LENGTH = 24
+    MAX_USERNAME_LENGTH = 18
 
     MIN_PASSWORD_LENGTH = 8
     MAX_PASSWORD_LENGTH = 255

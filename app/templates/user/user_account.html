@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block links %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user_profile.css') }}">
+{% endblock %}
+
+{% block title %}
+    Your account | LG
+{% endblock %}
+
+{% block content %}
+    <div class="inner-content">
+        <img class="big-user-icon" src="{{ url_for('static', filename='images/big_user_icon.png') }}" alt="user icon">
+
+        <div class="username-box">
+
+            <div class="username-inner-box">
+                <p class="username">{{ g.user.username }}</p>
+                <a class="edit-username-href" href="{{ url_for('user_routes.edit_username') }}">
+                    <img class="edit-icon" src="{{ url_for('static', filename='images/edit_icon.png') }}" alt="pen icon">
+                </a>
+            </div>
+
+            
+            <a href="{{ url_for('auth_routes.logout') }}" class="exit-word">Exit</a>
+        </div>
+    </div>
+    
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+{% endblock %}
+ 

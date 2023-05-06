@@ -1,6 +1,7 @@
+from flask import current_app as app
 from sqlalchemy import or_
 
-from app import app, db
+from app.extensions import db
 from app.models import ChatRoom, Message
 
 
@@ -35,17 +36,15 @@ def get_room_messages(room_name: str) -> list:
         return room_messages
 
 
-def get_user_chats(username: str):
+def get_user_chats(user_id: str) -> list:
     '''Получение всех чатов текущего пользователя'''
 
     with app.app_context():
 
         user_chats = ChatRoom.query.filter(or_(
-                ChatRoom.room_name.ilike(username + ':%'),
-                ChatRoom.room_name.ilike('%:' + username)
+                ChatRoom.room_name.ilike(str(user_id) + ':%'),
+                ChatRoom.room_name.ilike('%:' + str(user_id))
             )).all()
-
-        print(user_chats)
 
         return user_chats
 
@@ -61,4 +60,3 @@ def create_room(room_name: str) -> None:
 
         db.session.add(new_room)
         db.session.commit()
-

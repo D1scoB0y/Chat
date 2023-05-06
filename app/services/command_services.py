@@ -1,15 +1,20 @@
+from flask import current_app as app
 from flask_socketio import emit
 
-from app import app, db
+from app.extensions import db
 from app.models import User, Message, BlackList
 from app.services.room_services import get_room_by_name
-from app.services.message_services import create_system_message, send_system_message
-from app.services.user_services import get_user_by_username, get_recipient_by_sender_username, user_in_blacklist
+from app.services.message_services import create_system_message, send_system_message, delete_message
+from app.services.user_services import get_user_by_username, get_recipient_by_sender_id, user_in_blacklist
 
 
 def ban_user(blacklist_owner_id: int, user_id: int) -> None:
-    '''Добавление пользователя в черный
-    список другого пользователя'''
+    '''Добавление пользователя в черный список другого пользователя.
+    Добавление в чс представляет из себя создание записи состоящей
+    из id пользователя КОТОРЫЙ добавляет в чс и id пользователя
+    КОТОРОГО добавляют. Позже будем проверять состоит ли пользователь
+    в чс у собеседника путем проверки существования записи
+    с заданными id'''
 
     with app.app_context():
 
@@ -23,7 +28,8 @@ def ban_user(blacklist_owner_id: int, user_id: int) -> None:
 
 
 def unban_user(blacklist_owner_id: int, user_id: int) -> None:
-    '''Удаление пользователя из черного списка'''
+    '''Удаление записи о принадлежности пользователя к черному
+    списку другого пользователя'''
 
     with app.app_context():
 
@@ -40,29 +46,32 @@ def delete_system_messages(room_name: str, sender: User) -> None:
     комнаты и пользователя'''
     
     # Удаляем сообщения из бд
-    messages_to_delete = Message.query.filter_by(room_name=room_name)\
-        .filter_by(sender_id=sender.id).filter_by(sender_username='System').delete()
+    Message.query.filter_by(room_name=room_name)\
+        .filter_by(only_for=sender.username).filter_by(sender_username='System').delete()
     
     db.session.commit()
 
     # Отправляем комманду очистки чата на клиент
     emit('delete_sys_messages',
         {},
-        room=sender.username,
+        room=str(sender.id),
         broadcast=True)
 
 
 def show_all_commands(message: Message) -> None:
-    '''Вывод в чат всех возможных комманд'''
+    '''Вывод в чат всех возможных комманд.
+    Только для пользователя который ввел "/help" '''
 
     message = db.session.merge(message)
 
     # Отправляем комманду на клиент
     emit('help',
         {'message_type':'command', 'message_obj':message.like_json()},
-        room_name=message.only_for,
+        room=message.only_for,
         broadcast=True,
     )
+
+    delete_message(message=message)
 
 
 def command_controller(command_data: dict) -> None:
@@ -79,15 +88,15 @@ def command_controller(command_data: dict) -> None:
     )
 
     # Определяем получателя
-    recipient = get_recipient_by_sender_username(
+    recipient = get_recipient_by_sender_id(
         room_name=command_data.get('room_name'),
-        sender_username=sender.username,
+        sender_id=sender.id,
     )
 
     #Проверяем не находится ли отправитель в черном списке
     recipient_in_black_list = user_in_blacklist(
-        blacklist_owner_id=recipient.id,
-        user_id=sender.id,
+        blacklist_owner_id=sender.id,
+        user_id=recipient.id,
     )
 
     # Проверяем команду на добавление в черный список
@@ -100,7 +109,7 @@ def command_controller(command_data: dict) -> None:
             send_system_message(create_system_message(
                 room_name=room.room_name,
                 text=f'{recipient.username} is already on your blacklist',
-                only_for=sender.username,
+                only_for=sender.id,
             ))
 
         # Если собеседник не в черном списке, добавляем его туда
@@ -117,7 +126,7 @@ def command_controller(command_data: dict) -> None:
                 room_name=room.room_name,
                 text=f'You have added {recipient.username} to the blacklist,\
                         to resume the ability to send messages, enter the command "/unban"',
-                only_for=sender.username,
+                only_for=sender.id,
             ))
 
 
@@ -138,7 +147,7 @@ def command_controller(command_data: dict) -> None:
             send_system_message(create_system_message(
                 room_name=room.room_name,
                 text=f'You have removed {recipient.username} from your blacklist',
-                only_for=sender.username,
+                only_for=sender.id,
             ))
 
         # Если получатель не в черном списке у отправителя,
@@ -147,7 +156,7 @@ def command_controller(command_data: dict) -> None:
             send_system_message(create_system_message(
                 room_name=room.room_name,
                 text=f'{recipient.username} is not on your blacklist',
-                only_for=sender.username,
+                only_for=sender.id,
             ))
 
 
@@ -164,5 +173,5 @@ def command_controller(command_data: dict) -> None:
         show_all_commands(create_system_message(
                 room_name=room.room_name,
                 text='',
-                only_for=sender.username,
+                only_for=sender.id,
             ))
