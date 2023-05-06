@@ -88,7 +88,7 @@ Type your message into input field and press "Send" button(or Enter on your keyb
 
 There is some very useful chat commands:
 
-1. "/ban" - banned your pen friend
+1. "/ban" - ban your pen friend
 2. "/unban" - unban your friend
 3. "/help" - show all chat commands
 4. "/clear" - delete all system messages
