@@ -7,11 +7,11 @@ Flask Messenger is a simple messaging application for the browser. Developed on 
 ### I. Installation steps
 <br>
 
-##### 1. Clone the repository
+#### 1. Clone the repository
 
     git clone https://github.com/D1scoB0y/Chat.git
 
-##### 2. Create virtualenv and install requirements
+#### 2. Create virtualenv and install requirements
 ```
     python -m venv venv
 ```
@@ -28,7 +28,7 @@ then
     pip install -r requirements.txt
 ```
 
-##### 3. Add .env file to the root directory
+#### 3. Add .env file to the root directory
 
 ```
 # secret key
@@ -46,7 +46,7 @@ DB_NAME = your db name
 
 > [PostgreSQL installation guide](https://www.youtube.com/watch?v=0n41UTkOBb0)
 
-##### 4. Make migrations
+#### 4. Make migrations
 ```
 flask db init
 ```
@@ -59,7 +59,7 @@ then
 flask db upgrade
 ```
 
-##### 5. Start the app!
+#### 5. Start the app!
     python app.py
 
 Then open 127.0.0.1:5000 in your browser
@@ -71,20 +71,20 @@ Then open 127.0.0.1:5000 in your browser
 
 To exchange messages, you need to register at least 2 users. This is very easy to do, since you only need to come up with a username and password to register.
 
-##### 1. Register 2 users
+#### 1. Register 2 users
 
 Open two different bowsers and go to 127.0.0.1:5000. You will see the main page for non-authorized users. Click on the "New Account" button and register in different browsers under different names.
 
 
-##### 2. Find one of your users using the search bar
+#### 2. Find one of your users using the search bar
 
 Just start typing the name of the user you want to find and you'll get some hints.
 
-##### 3. You can start messaging!
+#### 3. You can start messaging!
 
 Type your message into input field and press "Send" button(or Enter on your keyboard).
 
-##### 4. Chat commands
+#### 4. Chat commands
 
 There is some very useful chat commands:
 
